@@ -10,7 +10,14 @@ import {
   initializeUserAccount 
 } from '../firebase';
 import { PlayerStats, Quest, InventoryItem } from '../types';
-import { INITIAL_PLAYER_STATS, INITIAL_QUESTS, INITIAL_INVENTORY } from '../utils/storage';
+import { 
+  INITIAL_PLAYER_STATS, 
+  INITIAL_QUESTS, 
+  INITIAL_INVENTORY,
+  loadSavedStats,
+  loadSavedQuests,
+  loadSavedInventory 
+} from '../utils/storage';
 
 interface GuestUser {
   uid: string;
@@ -66,6 +73,8 @@ function formatAuthError(err: any): string {
   }
 }
 
+const GUEST_SESSION_KEY = 'hearthbound_active_guest_session';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | GuestUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -83,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         try {
           setUser(currentUser);
+          localStorage.removeItem(GUEST_SESSION_KEY);
           const initialData = await initializeUserAccount(currentUser);
           setUserInitialData(initialData);
         } catch (err) {
@@ -90,8 +100,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setError('Failed to sync profile from cloud. Using local realm data.');
         }
       } else {
-        // If not a local guest, clear user
-        setUser((prev) => (prev && 'isAnonymous' in prev && !currentUser ? prev : null));
+        // Check if user had an active guest session
+        const savedGuestUid = localStorage.getItem(GUEST_SESSION_KEY);
+        if (savedGuestUid) {
+          const guestUser: GuestUser = {
+            uid: savedGuestUid,
+            email: 'guest@pixelrealm.local',
+            displayName: 'Guest Adventurer',
+            isAnonymous: true,
+          };
+          setUser(guestUser);
+          setUserInitialData({
+            stats: loadSavedStats(),
+            quests: loadSavedQuests(),
+            inventory: loadSavedInventory(),
+          });
+        } else {
+          setUser(null);
+          setUserInitialData(null);
+        }
       }
       setLoading(false);
     });
@@ -162,17 +189,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const enterAsLocalGuest = () => {
     setLoading(true);
     setError(null);
+    const guestUid = localStorage.getItem(GUEST_SESSION_KEY) || `guest_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(GUEST_SESSION_KEY, guestUid);
     const guestUser: GuestUser = {
-      uid: `guest_${Date.now()}`,
+      uid: guestUid,
       email: 'guest@pixelrealm.local',
       displayName: 'Guest Adventurer',
       isAnonymous: true,
     };
     setUser(guestUser);
     setUserInitialData({
-      stats: INITIAL_PLAYER_STATS,
-      quests: INITIAL_QUESTS,
-      inventory: INITIAL_INVENTORY,
+      stats: loadSavedStats(),
+      quests: loadSavedQuests(),
+      inventory: loadSavedInventory(),
     });
     setLoading(false);
   };
@@ -180,6 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleSignOut = async () => {
     try {
       setLoading(true);
+      localStorage.removeItem(GUEST_SESSION_KEY);
       await signOutUser();
       setUser(null);
       setUserInitialData(null);

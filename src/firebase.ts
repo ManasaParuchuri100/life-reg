@@ -14,6 +14,7 @@ import {
   getFirestore, 
   doc, 
   getDoc, 
+  getDocs,
   getDocFromServer,
   setDoc, 
   updateDoc, 
@@ -175,7 +176,67 @@ export async function initializeUserAccount(user: User): Promise<{
         completedQuestsCount: data.completedQuestsCount ?? INITIAL_PLAYER_STATS.completedQuestsCount,
         equipped: data.equipped || INITIAL_PLAYER_STATS.equipped,
       };
-      return { stats, quests: [], inventory: [] };
+
+      // Fetch saved quests
+      const questsSnap = await getDocs(collection(db, 'users', user.uid, 'quests'));
+      const quests: Quest[] = [];
+      questsSnap.forEach((d) => {
+        const qData = d.data();
+        quests.push({
+          id: qData.id || d.id,
+          title: qData.title || '',
+          description: qData.description || '',
+          attribute: qData.attribute || 'intellect',
+          locationId: qData.locationId || 'knowledge_tower',
+          xpReward: qData.xpReward ?? 25,
+          goldReward: qData.goldReward ?? 5,
+          attributeReward: qData.attributeReward ?? 1,
+          isCompleted: qData.isCompleted ?? false,
+          completedAt: qData.completedAt,
+          isDaily: qData.isDaily ?? false,
+          difficulty: qData.difficulty ?? 'medium',
+        });
+      });
+
+      // Fetch saved inventory
+      const invSnap = await getDocs(collection(db, 'users', user.uid, 'inventory'));
+      const inventory: InventoryItem[] = [];
+      invSnap.forEach((d) => {
+        const iData = d.data();
+        inventory.push({
+          id: iData.id || d.id,
+          name: iData.name || '',
+          type: iData.type || 'decoration',
+          description: iData.description || '',
+          icon: iData.icon || '📦',
+          cost: iData.cost ?? 0,
+          isOwned: iData.isOwned ?? false,
+          rarity: iData.rarity || 'common',
+          attributeBonus: iData.attributeBonus,
+          pixelSprite: iData.pixelSprite,
+        });
+      });
+
+      // If existing user document existed but subcollections were empty, seed default items
+      if (quests.length === 0) {
+        const batch = writeBatch(db);
+        for (const q of INITIAL_QUESTS) {
+          batch.set(doc(db, 'users', user.uid, 'quests', q.id), { ...q, userId: user.uid });
+          quests.push(q);
+        }
+        await batch.commit();
+      }
+
+      if (inventory.length === 0) {
+        const batch = writeBatch(db);
+        for (const item of INITIAL_INVENTORY) {
+          batch.set(doc(db, 'users', user.uid, 'inventory', item.id), { ...item, userId: user.uid });
+          inventory.push(item);
+        }
+        await batch.commit();
+      }
+
+      return { stats, quests, inventory };
     }
 
     // New user: Seed initial player stats, starter quests, and starter inventory
@@ -341,10 +402,11 @@ export function subscribeToUserInventory(
 export async function saveStatsToFirestore(userId: string, stats: PlayerStats): Promise<void> {
   const path = `users/${userId}`;
   try {
-    await updateDoc(doc(db, 'users', userId), {
+    await setDoc(doc(db, 'users', userId), {
       ...stats,
+      userId,
       updatedAt: new Date().toISOString(),
-    });
+    }, { merge: true });
   } catch (err) {
     handleFirestoreError(err, OperationType.UPDATE, path);
   }
@@ -375,17 +437,20 @@ export async function completeQuestInFirestore(
     
     // 1. Update Quest
     const questRef = doc(db, 'users', userId, 'quests', quest.id);
-    batch.update(questRef, {
+    batch.set(questRef, {
+      ...quest,
+      userId,
       isCompleted: true,
       completedAt: Date.now(),
-    });
+    }, { merge: true });
 
     // 2. Update Stats
     const userRef = doc(db, 'users', userId);
-    batch.update(userRef, {
+    batch.set(userRef, {
       ...newStats,
+      userId,
       updatedAt: new Date().toISOString(),
-    });
+    }, { merge: true });
 
     await batch.commit();
   } catch (err) {
@@ -404,15 +469,18 @@ export async function buyItemInFirestore(
     const batch = writeBatch(db);
 
     const itemRef = doc(db, 'users', userId, 'inventory', item.id);
-    batch.update(itemRef, {
+    batch.set(itemRef, {
+      ...item,
+      userId,
       isOwned: true,
-    });
+    }, { merge: true });
 
     const userRef = doc(db, 'users', userId);
-    batch.update(userRef, {
+    batch.set(userRef, {
+      userId,
       gold: newGold,
       updatedAt: new Date().toISOString(),
-    });
+    }, { merge: true });
 
     await batch.commit();
   } catch (err) {
@@ -427,10 +495,11 @@ export async function equipItemInFirestore(
 ): Promise<void> {
   const path = `users/${userId}`;
   try {
-    await updateDoc(doc(db, 'users', userId), {
+    await setDoc(doc(db, 'users', userId), {
+      userId,
       equipped,
       updatedAt: new Date().toISOString(),
-    });
+    }, { merge: true });
   } catch (err) {
     handleFirestoreError(err, OperationType.UPDATE, path);
   }

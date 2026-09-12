@@ -68,11 +68,33 @@ function GameApp() {
   // When initial data arrives from Auth initialization, populate state
   useEffect(() => {
     if (userInitialData) {
-      if (userInitialData.stats) setStats(userInitialData.stats);
-      if (userInitialData.quests && userInitialData.quests.length > 0) setQuests(userInitialData.quests);
-      if (userInitialData.inventory && userInitialData.inventory.length > 0) setInventory(userInitialData.inventory);
+      if (userInitialData.stats) {
+        setStats(userInitialData.stats);
+        saveStats(userInitialData.stats);
+      }
+      if (userInitialData.quests && userInitialData.quests.length > 0) {
+        setQuests(userInitialData.quests);
+        saveQuests(userInitialData.quests);
+      }
+      if (userInitialData.inventory && userInitialData.inventory.length > 0) {
+        setInventory(userInitialData.inventory);
+        saveInventory(userInitialData.inventory);
+      }
     }
   }, [userInitialData]);
+
+  // Keep local storage strictly in sync with active state on all state updates
+  useEffect(() => {
+    saveStats(stats);
+  }, [stats]);
+
+  useEffect(() => {
+    saveQuests(quests);
+  }, [quests]);
+
+  useEffect(() => {
+    saveInventory(inventory);
+  }, [inventory]);
 
   // Real-time Firestore synchronization for authenticated user
   useEffect(() => {
