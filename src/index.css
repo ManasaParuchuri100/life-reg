@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    user-select: none;
+    background-color: #121826;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+}
+
+.font-pixel {
+  font-family: 'Pixelify Sans', cursive, monospace;
+}
+
+.font-retro {
+  font-family: 'Press Start 2P', monospace;
+}
+
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Authentic RPG Pixel Borders */
+.pixel-border {
+  box-shadow: 
+    0 -3px 0 0 #0f172a,
+    0 3px 0 0 #0f172a,
+    -3px 0 0 0 #0f172a,
+    3px 0 0 0 #0f172a;
+}
+
+.pixel-border-gold {
+  box-shadow: 
+    0 -3px 0 0 #d97706,
+    0 3px 0 0 #78350f,
+    -3px 0 0 0 #b45309,
+    3px 0 0 0 #92400e;
+}
+
+.pixel-border-primary {
+  box-shadow: 
+    0 -3px 0 0 #38bdf8,
+    0 3px 0 0 #0369a1,
+    -3px 0 0 0 #0284c7,
+    3px 0 0 0 #075985;
+}
+
+.pixel-panel {
+  background: #1e293b;
+  border-top: 3px solid #475569;
+  border-left: 3px solid #334155;
+  border-right: 3px solid #0f172a;
+  border-bottom: 3px solid #020617;
+}
+
+.pixel-btn {
+  transition: all 0.1s ease;
+  border-top: 3px solid rgba(255,255,255,0.3);
+  border-left: 3px solid rgba(255,255,255,0.2);
+  border-right: 3px solid rgba(0,0,0,0.4);
+  border-bottom: 3px solid rgba(0,0,0,0.6);
+}
+
+.pixel-btn:active {
+  transform: translateY(2px);
+  border-top: 3px solid rgba(0,0,0,0.6);
+  border-left: 3px solid rgba(0,0,0,0.4);
+  border-right: 3px solid rgba(255,255,255,0.2);
+  border-bottom: 3px solid rgba(255,255,255,0.3);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.4)); }
+  50% { filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.9)); }
+}
+
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 1.5s ease-in-out infinite;
+}
+
+/* Custom retro scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border: 1px solid #1e293b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

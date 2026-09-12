@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix PixelRealm: Life RPG",
+  "description": "An original pixel-art and voxel-inspired Life RPG world where real-life quests and habits evolve your playable realm, unlock buildings, and level up your character.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

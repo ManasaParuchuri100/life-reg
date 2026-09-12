@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "User RPG player stats and profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "title": { "type": "string", "maxLength": 100 },
+        "level": { "type": "number" },
+        "xp": { "type": "number" },
+        "xpToNextLevel": { "type": "number" },
+        "hp": { "type": "number" },
+        "maxHp": { "type": "number" },
+        "gold": { "type": "number" },
+        "streak": { "type": "number" },
+        "lastActiveDate": { "type": "string", "maxLength": 50 },
+        "completedQuestsCount": { "type": "number" },
+        "userId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "level", "xp", "gold", "userId"]
+    },
+    "quest": {
+      "title": "Quest",
+      "description": "User daily or milestone RPG quest",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 500 },
+        "attribute": { "type": "string", "maxLength": 50 },
+        "locationId": { "type": "string", "maxLength": 50 },
+        "xpReward": { "type": "number" },
+        "goldReward": { "type": "number" },
+        "attributeReward": { "type": "number" },
+        "isCompleted": { "type": "boolean" },
+        "isDaily": { "type": "boolean" },
+        "difficulty": { "type": "string", "maxLength": 50 },
+        "userId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "title", "attribute", "locationId", "xpReward", "goldReward", "userId"]
+    },
+    "inventoryItem": {
+      "title": "InventoryItem",
+      "description": "User equipment and collectable item status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 500 },
+        "icon": { "type": "string", "maxLength": 20 },
+        "cost": { "type": "number" },
+        "isOwned": { "type": "boolean" },
+        "rarity": { "type": "string", "maxLength": 50 },
+        "pixelSprite": { "type": "string", "maxLength": 100 },
+        "userId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "name", "type", "cost", "isOwned", "userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "User profile and RPG character stats"
+    },
+    "/users/{userId}/quests/{questId}": {
+      "schema": "quest",
+      "description": "Quests created or assigned to this user"
+    },
+    "/users/{userId}/inventory/{itemId}": {
+      "schema": "inventoryItem",
+      "description": "Inventory items owned or available for purchase"
+    }
+  }
+}
