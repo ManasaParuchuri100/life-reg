@@ -87,13 +87,16 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 pt-5 pb-3 flex items-start justify-between border-b border-slate-800/80">
+        <div className="px-5 sm:px-6 pt-5 pb-3 flex items-start justify-between border-b border-slate-800 bg-[#070e1b]">
           <div>
-            <h2 className="text-base sm:text-lg font-pixel font-bold tracking-wide text-slate-100 uppercase leading-none">
-              ARI'S CHRONICLE
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xl select-none">👤</span>
+              <h2 className="text-base sm:text-lg font-pixel font-bold tracking-wide text-slate-100 uppercase leading-none">
+                [ CHARACTER ]
+              </h2>
+            </div>
             <p className="text-xs text-slate-400 mt-1 font-sans">
-              Pathfinder · Level {stats.level} Adventurer
+              Level {stats.level} {stats.title} · Life RPG Progression
             </p>
           </div>
 
@@ -102,8 +105,8 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({
               sounds.playClick();
               onClose();
             }}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
-            title="Close"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Close (Esc)"
           >
             <X className="w-5 h-5" />
           </button>

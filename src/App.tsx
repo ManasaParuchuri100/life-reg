@@ -327,15 +327,43 @@ function GameApp() {
     return <SignInPage />;
   }
 
+  // ---------------------------------------------------------------------------
+  // RENDER: WORLD-FIRST FULLSCREEN RPG LAYOUT WITH LIGHTWEIGHT HUD
+  // ---------------------------------------------------------------------------
   const activeQuestCount = quests.filter((q) => !q.isCompleted).length;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col items-center justify-start p-2 sm:p-4 md:p-6 overflow-x-hidden font-sans">
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-[#070b14] text-slate-100 font-sans select-none flex flex-col">
       
-      {/* Maximum Width Main Container */}
-      <div className="w-full max-w-6xl flex flex-col items-center">
-        
-        {/* RPG Character HUD Header */}
+      {/* =================================================================== */}
+      {/* 1. THE WORLD IS THE PRIMARY INTERFACE (100% Fullscreen Viewport)   */}
+      {/* =================================================================== */}
+      <main className="w-full h-full absolute inset-0 z-0 overflow-hidden">
+        <WorldScene
+          stats={stats}
+          quests={quests}
+          onSelectLocation={(locId) => {
+            if (locId === 'player_home') {
+              // Home opens Character / Overall progression per World-First UX spec
+              setCurrentTab('character');
+              setSelectedLocation(null);
+            } else {
+              // Landmark buildings open their respective attribute quests
+              setSelectedLocation(locId);
+              setCurrentTab('quests');
+            }
+          }}
+          activeBuildingGlow={activeBuildingGlow}
+          floatingRewards={floatingRewards}
+          timeOfDay={timeOfDay}
+          setTimeOfDay={setTimeOfDay}
+        />
+      </main>
+
+      {/* =================================================================== */}
+      {/* 2. LIGHTWEIGHT HUD: Top-Left, Top-Center, Top-Right               */}
+      {/* =================================================================== */}
+      <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none p-2 sm:p-3">
         <HUD
           stats={stats}
           isMuted={isMuted}
@@ -351,106 +379,102 @@ function GameApp() {
           onSignOut={signOut}
           isCloudSynced={true}
         />
+      </div>
 
-        {/* The World is the Primary Stage - Always rendered and interactive */}
-        <main className="w-full flex-1 relative">
-          <WorldScene
-            stats={stats}
-            quests={quests}
-            onSelectLocation={(locId) => {
-              setSelectedLocation(locId);
-              setCurrentTab('quests');
-            }}
-            activeBuildingGlow={activeBuildingGlow}
-            floatingRewards={floatingRewards}
-            timeOfDay={timeOfDay}
-            setTimeOfDay={setTimeOfDay}
-          />
-        </main>
-
-        {/* Floating Game Navigation Bar */}
-        <Navigation
-          currentTab={currentTab}
-          onChangeTab={(tab) => {
-            setCurrentTab(tab);
-            if (tab === 'world') {
-              setSelectedLocation(null);
-            }
-          }}
-          activeQuestCount={activeQuestCount}
-        />
-
-        {/* Quests Board Modal (triggered via Nav or Location click) */}
-        <QuestsModal
-          isOpen={currentTab === 'quests' || selectedLocation !== null}
-          onClose={() => {
-            setCurrentTab('world');
+      {/* =================================================================== */}
+      {/* 3. MODERN GAME BOTTOM NAVIGATION DOCK                               */}
+      {/* =================================================================== */}
+      <Navigation
+        currentTab={currentTab}
+        onChangeTab={(tab) => {
+          setCurrentTab(tab);
+          if (tab === 'world') {
             setSelectedLocation(null);
-          }}
-          quests={quests}
-          selectedLocationId={selectedLocation}
-          onSelectLocationFilter={(locId) => setSelectedLocation(locId)}
-          onCompleteQuest={handleCompleteQuest}
-          onOpenCreateQuest={(locId, attr) => {
-            setCreateQuestPreset({ locationId: locId, attribute: attr });
-            setIsNewQuestModalOpen(true);
-          }}
-        />
+          }
+        }}
+        activeQuestCount={activeQuestCount}
+      />
 
-        {/* Character Chronicle Modal */}
-        <CharacterModal
-          isOpen={currentTab === 'character'}
-          onClose={() => setCurrentTab('world')}
-          stats={stats}
-          inventory={inventory}
-          onEquipItem={handleEquipItem}
-        />
+      {/* =================================================================== */}
+      {/* 4. MODALS: CLEAN GAME-STYLE OVERLAYS (WORLD STAYS LIVING IN BG)     */}
+      {/* =================================================================== */}
 
-        {/* Inventory Treasure Chest Modal */}
-        <InventoryModal
-          isOpen={currentTab === 'inventory'}
-          onClose={() => setCurrentTab('world')}
-          stats={stats}
-          inventory={inventory}
-          onEquipItem={handleEquipItem}
-          onBuyItem={handleBuyItem}
-        />
+      {/* Quests Board Modal (triggered via Nav or walking to a Landmark) */}
+      <QuestsModal
+        isOpen={currentTab === 'quests' || selectedLocation !== null}
+        onClose={() => {
+          setCurrentTab('world');
+          setSelectedLocation(null);
+        }}
+        quests={quests}
+        selectedLocationId={selectedLocation}
+        onSelectLocationFilter={(locId) => setSelectedLocation(locId)}
+        onCompleteQuest={handleCompleteQuest}
+        onOpenCreateQuest={(locId, attr) => {
+          setCreateQuestPreset({ locationId: locId, attribute: attr });
+          setIsNewQuestModalOpen(true);
+        }}
+      />
 
-        {/* Progress & Realm Harmony Modal */}
-        <ProgressModal
-          isOpen={currentTab === 'progress'}
-          onClose={() => setCurrentTab('world')}
-          stats={stats}
-          onSelectLocation={(locId) => {
+      {/* Character Chronicle Modal (triggered via Nav, HUD, or Player Home) */}
+      <CharacterModal
+        isOpen={currentTab === 'character'}
+        onClose={() => setCurrentTab('world')}
+        stats={stats}
+        inventory={inventory}
+        onEquipItem={handleEquipItem}
+        onOpenInventory={() => setCurrentTab('inventory')}
+      />
+
+      {/* Inventory & Backpack Modal (triggered via Nav, HUD shortcut, or Gear) */}
+      <InventoryModal
+        isOpen={currentTab === 'inventory'}
+        onClose={() => setCurrentTab('world')}
+        stats={stats}
+        inventory={inventory}
+        onEquipItem={handleEquipItem}
+        onBuyItem={handleBuyItem}
+      />
+
+      {/* Progress & Realm Harmony Modal */}
+      <ProgressModal
+        isOpen={currentTab === 'progress'}
+        onClose={() => setCurrentTab('world')}
+        stats={stats}
+        onSelectLocation={(locId) => {
+          if (locId === 'player_home') {
+            setCurrentTab('character');
+            setSelectedLocation(null);
+          } else {
             setSelectedLocation(locId);
             setCurrentTab('quests');
-          }}
-        />
+          }
+        }}
+      />
 
-        {/* Create Quest Modal */}
-        <CreateQuestModal
-          isOpen={isNewQuestModalOpen}
-          onClose={() => setIsNewQuestModalOpen(false)}
-          defaultLocationId={createQuestPreset.locationId}
-          defaultAttribute={createQuestPreset.attribute}
-          onCreateQuest={handleCreateQuest}
-        />
+      {/* Create Quest Modal */}
+      <CreateQuestModal
+        isOpen={isNewQuestModalOpen}
+        onClose={() => setIsNewQuestModalOpen(false)}
+        defaultLocationId={createQuestPreset.locationId}
+        defaultAttribute={createQuestPreset.attribute}
+        onCreateQuest={handleCreateQuest}
+      />
 
-        {/* Level Up Celebration Modal */}
-        <LevelUpModal
-          isOpen={isLevelUpModalOpen}
-          onClose={() => setIsLevelUpModalOpen(false)}
-          stats={stats}
-        />
+      {/* Level Up Celebration Modal */}
+      <LevelUpModal
+        isOpen={isLevelUpModalOpen}
+        onClose={() => setIsLevelUpModalOpen(false)}
+        stats={stats}
+      />
 
-        {/* Audio & Ambience Mixer Modal */}
-        <AudioSettingsModal
-          isOpen={isAudioSettingsOpen}
-          onClose={() => setIsAudioSettingsOpen(false)}
-          onVolumeChange={() => setIsMuted(sounds.getMuted())}
-        />
+      {/* Audio & Ambience Mixer Modal */}
+      <AudioSettingsModal
+        isOpen={isAudioSettingsOpen}
+        onClose={() => setIsAudioSettingsOpen(false)}
+        onVolumeChange={() => setIsMuted(sounds.getMuted())}
+      />
 
-      </div>
     </div>
   );
 }

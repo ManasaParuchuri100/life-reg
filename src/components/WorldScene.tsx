@@ -503,9 +503,9 @@ export const WorldScene: React.FC<WorldSceneProps> = ({
         )}
 
         {/* =================================================================== */}
-        {/* TOP HUD: MODE TOGGLE, TIME OF DAY, LANDMARKS */}
+        {/* TOP CONTROLS: MODE TOGGLE, TIME OF DAY, LANDMARKS (BELOW HUD)        */}
         {/* =================================================================== */}
-        <div className="absolute top-3 inset-x-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
+        <div className="absolute top-16 sm:top-20 inset-x-2 sm:inset-x-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
           {/* Left: View Mode Toggle & Compass */}
           <div className="flex items-center gap-2 pointer-events-auto bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-lg">
             <button
@@ -683,32 +683,34 @@ export const WorldScene: React.FC<WorldSceneProps> = ({
         {/* PROXIMITY INTERACTION BANNER (BUILDING & NPC) */}
         {/* =================================================================== */}
         {activeNearbyBuilding && (
-          <div className="absolute bottom-16 inset-x-0 flex justify-center pointer-events-none z-30 px-4">
-            <div className="pointer-events-auto bg-slate-900/95 backdrop-blur-md border-2 border-amber-400/80 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 max-w-md animate-in fade-in slide-in-from-bottom-3 duration-200">
-              <div className="p-2.5 bg-amber-500/20 border border-amber-400/40 rounded-xl text-amber-300">
-                <Sparkles className="w-6 h-6 animate-pulse" />
+          <div className="absolute bottom-20 sm:bottom-24 inset-x-0 flex justify-center pointer-events-none z-30 px-4">
+            <div className="pointer-events-auto bg-[#0a1120]/95 backdrop-blur-md border-2 border-amber-400/90 px-4 sm:px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4 max-w-lg animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="p-2.5 bg-amber-500/20 border border-amber-400/40 rounded-xl text-amber-300 shrink-0">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-white tracking-wide truncate">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
                     {activeNearbyBuilding.name}
                   </h3>
-                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                    {'attributeName' in activeNearbyBuilding ? activeNearbyBuilding.attributeName : activeNearbyBuilding.attribute}
+                  <span className="text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    {activeNearbyBuilding.id === 'player_home' ? 'Character' : ('attributeName' in activeNearbyBuilding ? activeNearbyBuilding.attributeName : activeNearbyBuilding.attribute)}
                   </span>
                 </div>
-                <p className="text-xs text-slate-300 truncate">
-                  {quests.filter(q => q.locationId === activeNearbyBuilding.id && !q.completed).length} active quests available
+                <p className="text-[11px] sm:text-xs text-slate-300 truncate mt-0.5">
+                  {activeNearbyBuilding.id === 'player_home'
+                    ? 'Manage character attributes & equipment'
+                    : `${quests.filter(q => q.locationId === activeNearbyBuilding.id && !q.completed).length} active quests available`}
                 </p>
               </div>
 
               <button
                 onClick={() => handleEnterLocation(activeNearbyBuilding.id)}
-                className="px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-pixel font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shrink-0 uppercase tracking-wide cursor-pointer"
               >
-                <span>ENTER</span>
-                <span className="text-[10px] bg-slate-950/20 px-1 py-0.5 rounded font-mono">[E]</span>
+                <span className="text-[10px] bg-slate-950/25 px-1.5 py-0.5 rounded font-mono font-bold">[E]</span>
+                <span>ENTER {activeNearbyBuilding.name.toUpperCase()}</span>
               </button>
             </div>
           </div>
@@ -716,27 +718,27 @@ export const WorldScene: React.FC<WorldSceneProps> = ({
 
         {/* NPC Nearby Talk Banner */}
         {!activeNearbyBuilding && activeNearbyNpc && (
-          <div className="absolute bottom-16 inset-x-0 flex justify-center pointer-events-none z-30 px-4">
-            <div className="pointer-events-auto bg-slate-900/95 backdrop-blur-md border-2 border-sky-400/80 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 max-w-md animate-in fade-in slide-in-from-bottom-3 duration-200">
-              <div className="p-2.5 bg-sky-500/20 border border-sky-400/40 rounded-xl text-sky-300">
-                <MessageSquare className="w-6 h-6 animate-pulse" />
+          <div className="absolute bottom-20 sm:bottom-24 inset-x-0 flex justify-center pointer-events-none z-30 px-4">
+            <div className="pointer-events-auto bg-[#0a1120]/95 backdrop-blur-md border-2 border-sky-400/90 px-4 sm:px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 sm:gap-4 max-w-md animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="p-2.5 bg-sky-500/20 border border-sky-400/40 rounded-xl text-sky-300 shrink-0">
+                <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-white tracking-wide truncate">
+                <h3 className="text-xs sm:text-sm font-bold text-white tracking-wide truncate">
                   {activeNearbyNpc.name}
                 </h3>
-                <p className="text-xs text-sky-300/90 truncate font-medium">
+                <p className="text-[11px] sm:text-xs text-sky-300/90 truncate font-medium mt-0.5">
                   {activeNearbyNpc.role}
                 </p>
               </div>
 
               <button
                 onClick={handleInteractAction}
-                className="px-4 py-2 bg-gradient-to-r from-sky-400 to-sky-500 hover:from-sky-300 hover:to-sky-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-sky-400 to-sky-500 hover:from-sky-300 hover:to-sky-400 text-slate-950 font-pixel font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1.5 shrink-0 uppercase tracking-wide cursor-pointer"
               >
+                <span className="text-[10px] bg-slate-950/25 px-1.5 py-0.5 rounded font-mono font-bold">[E]</span>
                 <span>TALK</span>
-                <span className="text-[10px] bg-slate-950/20 px-1 py-0.5 rounded font-mono">[E]</span>
               </button>
             </div>
           </div>
